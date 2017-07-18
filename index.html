@@ -60,7 +60,8 @@ canvas {
       back: "#203030",
       back1: "#AA89FF",
       back2: "#83E1FF",
-      snake: "#4FD895",
+      console: "gold",
+      snake: "#2da27d",
       apple: "#8c1f34"
     }
 
@@ -82,7 +83,7 @@ canvas {
     var cons = {
       type: "text",
       cont: "Presiona OK para comenzar",
-      color: "white",
+      color: colors.console,
       size: 40,
       x: 100,
       y: 40
@@ -93,6 +94,11 @@ canvas {
       color: colors.back1,
       x: 0,
       y: 0
+    }
+    var fondo2 = {
+      type: "rects",
+      color: colors.back2,
+      cont: []
     }
 
     var events = {
@@ -111,15 +117,27 @@ canvas {
 
       ts=Math.floor(cnv.height/tc);
 
-      snake.widths = ts-2;
-      snake.heights = ts-2;
-      apple.width = ts-2;
-      apple.height = ts-2;
+      snake.widths = ts-0;
+      snake.heights = ts-0;
+      apple.width = ts-0;
+      apple.height = ts-0;
       fondo.width = ts*tc;
       fondo.height = ts*tc;
+      fondo2.widths = ts;
+      fondo2.heights = ts;
+
+      for(var i=0;i<tc;i++){
+        for(var j=0;j<tc;j++){
+          if((i+j) % 2 == 0){
+            fondo2.cont.push({x:i,y:j});
+          }
+        }
+      }
 
       document.addEventListener("keydown",canvasKey);
+
       drawables.push(fondo);
+      drawables.push(fondo2);
       drawables.push(cons);
       draw();
       events.ok = function(){snakeEngineStart()};
