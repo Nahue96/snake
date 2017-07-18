@@ -1,11 +1,11 @@
 {
-  "id": "com.domain.app",
-  "version": "0.0.1",
-  "vendor": "My Company",
-  "type": "web",
-  "main": "index.html",
-  "title": "snake",
-  "icon": "icon.png",
-  "largeIcon": "largeIcon.png",
-  "uiRevision": 2
+    "vendor": "My Company",
+    "largeIcon": "largeIcon.png",
+    "icon": "icon.png",
+    "main": "index.html",
+    "id": "com.panter.snake",
+    "title": "Snake",
+    "type": "web",
+    "version": "0.1.1",
+    "uiRevision":2
 }
