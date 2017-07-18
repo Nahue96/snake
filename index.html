@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+body {
+  width: 100%;
+  height: 100%;
+  background-color: #202020;
+  text-align:center;
+  color: #FFFFFF;
+}
+
+div {
+  position:absolute;
+  height:100%;
+  width:100%;
+  display: table;
+}
+canvas {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0px;
+  left: 0px;
+}
+
+
+</style>
+	<script src="webOSjs-0.1.0/webOS.js" charset="utf-8"></script>
+	<script type="text/javascript">
+	   //sample code for calling LS2 API
+       var lunaReq= webOS.service.request("luna://com.palm.systemservice",
+        {
+            method:"clock/getTime",
+            parameters:{},
+            onSuccess: function (args) {
+				console.log("UTC:", args.utc);
+            },
+            onFailure: function (args) {
+            }
+        });
+	</script>
+        <script type="text/javascript" src="snake.js"></script>
+</head>
+<body onload="start()">
+  <canvas id="canvas"></canvas>
+
+  <script>
+    var interval = null;
+    var drawables = new Array();
+    var fps = 15;
+
+    var vx=1,vy=0;
+    var px=10,py=10;
+    var tc=20, ts;
+    var puntos = 5;
+
+    var colors = {
+      back: "#203030",
+      snake: "lime",
+      apple: "red"
+    }
+
+    var snake = {
+      type: "rects",
+      color: colors.snake,
+      cont: new Array()
+    }
+    tail = snake.cont;
+    var apple = {
+      type: "rect",
+      color: colors.apple,
+      x: 5,
+      y: 5
+    }
+    ax = apple.x;
+    ay = apple.y;
+
+    var cons = {
+      type: "text",
+      cont: "Presiona OK para comenzar",
+      color: "white",
+      size: 40,
+      x: 100,
+      y: 40
+    }
+
+    var fondo = {
+      type: "rect",
+      color: colors.back,
+      x: 0,
+      y: 0
+    }
+
+    var events = {
+      right: function(){ say("se presiono derecha");},
+      left: function(){ say("se presiono izquierda");},
+      up: function(){ say("se presiono arriba");},
+      down: function(){ say("se presiono abajo");},
+      ok: function(){ say("se presiono ok");}
+    }
+
+    function start(){
+      cnv = document.getElementById("canvas");
+      cc = cnv.getContext("2d");
+      cnv.width = window.innerWidth;
+      cnv.height = window.innerHeight;
+
+      ts=Math.floor(cnv.height/tc);
+
+      snake.widths = ts-2;
+      snake.heights = ts-2;
+      apple.width = ts-2;
+      apple.height = ts-2;
+      fondo.width = ts*tc;
+      fondo.height = ts*tc;
+
+      document.addEventListener("keydown",canvasKey);
+      drawables.push(fondo);
+      drawables.push(cons);
+      draw();
+      events.ok = function(){snakeEngineStart()};
+    }
+    function snakeEngineStart(){
+      events.left = function(){vx=-1;vy=0};
+      events.up = function(){vx=0;vy=-1};
+      events.right = function(){vx=1;vy=0};
+      events.down = function(){vx=0;vy=1};
+
+      drawables.push(snake);
+      drawables.push(apple);
+      interval = setInterval(snakeEngine,1000/fps);
+      events.ok = function(){say("No toques el OK al pedo");};
+    }
+    function snakeEngine(){
+      //comprobar que no este volviendo para atras
+      if(tail.length>=5){
+        if(px+vx==tail[tail.length-2].x && py+vy==tail[tail.length-2].y){
+          vx*=-1;
+          vy*=-1;
+          say("Casi te das vuelta cual media");
+        }
+      }
+      //mover
+      px += vx;
+      py += vy;
+
+      //teletrans
+      if(px>tc-1){
+        px=0;
+      }if(px<0){
+        px=tc-1;
+      }if(py>tc-1){
+        py=0;
+      }if(py<0){
+        py=tc-1;
+      }
+
+      draw();
+
+
+      for(var i=0;i<tail.length;i++){
+
+        if(tail[i].x==px && tail[i].y==py){
+          say("perdiste. Puntaje: "+puntos);
+          puntos=5;
+        }
+      }
+      tail.push({x:px,y:py});
+      while(tail.length>puntos){
+        tail.shift();
+      }
+
+      if(px==ax && py==ay){
+        puntos++;
+        ax = Math.floor(Math.random()*tc);
+        ay = Math.floor(Math.random()*tc);
+        apple.x = ax; apple.y = ay;
+        say("Puntaje: " + puntos);
+      }
+
+    }
+
+    function draw(){
+      cc.fillStyle = "#202020";
+      cc.fillRect(0,0,cnv.width,cnv.height);
+      for(var i=0;i<drawables.length;i++){
+        obj = drawables[i];
+        cc.fillStyle = obj.color;
+        cc.font = obj.size + "px Verdana";
+        switch(obj.type){
+          case "text":
+            cc.fillText(obj.cont,obj.x,obj.y);
+            break;
+          case "rects":
+            for(var j=0;j<obj.cont.length;j++){
+              cc.fillRect(obj.cont[j].x *ts ,obj.cont[j].y *ts ,obj.widths,obj.heights);
+            }
+            break;
+          case "rect":
+            cc.fillRect(obj.x *ts, obj.y *ts, obj.width,obj.height);
+            break;
+           default:
+            say("ERROR: no se reconoce el tipo de drawable");
+            break;
+        }
+      }
+    }
+    function say(text){
+      cons.cont = text;
+      console.log("say: "+text);
+      draw();
+    }
+    function canvasKey(evt){
+      switch(evt.keyCode){
+        case 37: events.left(); break;
+        case 38: events.up(); break;
+        case 39: events.right(); break;
+        case 40: events.down(); break;
+        case 13: events.ok(); break;
+      }
+    }
+
+  </script>
+
+</body>
+</html>
